@@ -2,8 +2,9 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>User Dashboard</title>
+    <title>Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
         * {
             box-sizing: border-box;
@@ -12,7 +13,7 @@
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f8f9fa;
         }
 
         .navbar {
@@ -47,22 +48,30 @@
             padding: 20px;
         }
 
+        .add-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
         .table-container {
             overflow-x: auto;
-            background-color: white;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            background-color: white;
             min-width: 700px;
         }
 
         th, td {
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #dee2e6;
             text-align: left;
         }
 
@@ -71,21 +80,28 @@
             color: white;
         }
 
-        .roles span {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 4px 8px;
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        a.button {
+            padding: 6px 12px;
+            margin: 2px;
             border-radius: 4px;
-            font-size: 13px;
-            margin-right: 5px;
+            text-decoration: none;
+            color: white;
+            display: inline-block;
+        }
+
+        .edit-button {
+            background-color: #28a745;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
         }
 
         @media (max-width: 768px) {
-            table {
-                font-size: 14px;
-            }
-
             .navbar h2 {
                 margin-bottom: 10px;
                 flex: 100%;
@@ -95,6 +111,10 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+
+            table {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -102,13 +122,15 @@
 
 
 <div class="navbar">
-    <h2>User Dashboard</h2>
+    <h2>Admin Dashboard</h2>
     <form th:action="@{/logout}" method="post">
         <button type="submit">Logout</button>
     </form>
 </div>
 
 <div class="container">
+    <a class="add-button" th:href="@{/admin/new}">Add New User</a>
+
     <div class="table-container">
         <table>
             <thead>
@@ -116,20 +138,25 @@
                 <th>ID</th>
                 <th>First Name</th>
                 <th>Last Name</th>
-                <th>Email</th>
                 <th>Age</th>
-                <th>Roles</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody>
-            <tr>
+            <tr th:each="user : ${users}">
                 <td th:text="${user.id}"></td>
                 <td th:text="${user.firstName}"></td>
                 <td th:text="${user.lastName}"></td>
-                <td th:text="${user.email}"></td>
                 <td th:text="${user.age}"></td>
-                <td class="roles">
-                    <span th:each="role : ${user.roles}" th:text="${role.name}"></span>
+                <td th:text="${user.email}"></td>
+                <td>
+                    <span th:each="role : ${user.roles}" th:text="${role.name}" style="margin-right: 5px;"></span>
+                </td>
+                <td>
+                    <a th:href="@{'/admin/edit/' + ${user.id}}" class="button edit-button">Edit</a>
+                    <a th:href="@{'/admin/delete/' + ${user.id}}" class="button delete-button">Delete</a>
                 </td>
             </tr>
             </tbody>
