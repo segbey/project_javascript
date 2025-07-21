@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        body { background-color: #f8f9fa; font-family: "Segoe UI", sans-serif; }
+        .sidebar { min-height: 100vh; background-color: #ffffff; border-right: 1px solid #dee2e6; }
+        .nav-tabs .nav-link.active { color: #000 !important; background-color: rgba(0, 0, 0, 0.05); font-weight: 500; }
+        .nav-link.active { background-color: #0d6efd; color: white !important; opacity: 0.85; }
+        .card { border: 0; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+        .form-control, .form-select { border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid justify-content-between">
+        <span id="auth-info" class="navbar-text text-white"></span>
+        <button onclick="logout()" class="btn btn-outline-light btn-sm">Logout</button>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 p-0 sidebar">
+            <nav class="nav flex-column nav-pills p-3">
+                <a class="nav-link active" id="admin-tab" href="#" onclick="switchView('admin')">Admin</a>
+                <a class="nav-link" id="user-tab" href="#" onclick="switchView('user')">User</a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10 p-4">
+            <div id="admin-view">
+                <h3 class="mb-3">Admin panel</h3>
+                <ul class="nav nav-tabs mb-3">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="loadUsers()">All Users</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showCreateForm()">New User</a>
+                    </li>
+                </ul>
+                <div id="user-table"></div>
+                <div id="create-user-form" style="display:none;"></div>
+            </div>
+
+            <div id="user-view" style="display:none;">
+                <h3 class="mb-4">User Information Page</h3>
+                <div class="card p-4">
+                    <h5 class="mb-3">About User</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped align-middle mb-0">
+                            <thead class="table-light">
+                            <tr><th>ID</th><th>First Name</th><th>Last Name</th><th>Age</th><th>Email</th><th>Roles</th></tr>
+                            </thead>
+                            <tbody id="user-info"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="editUserForm" onsubmit="updateUser(event)">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">User ID</label>
+                        <input type="text" class="form-control bg-light" id="edit-id" name="id" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="edit-firstName" name="firstName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="edit-lastName" name="lastName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Age</label>
+                        <input type="number" class="form-control" id="edit-age" name="age">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit-email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="edit-password" name="password">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select multiple class="form-select" id="edit-roles" name="roles">
+                            <option value="1">ADMIN</option>
+                            <option value="2">USER</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Edit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="deleteUserForm" onsubmit="confirmDelete(event)">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">ID</label>
+                        <input type="text" class="form-control bg-light" id="delete-id" name="id" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control bg-light" id="delete-firstName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control bg-light" id="delete-lastName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Age</label>
+                        <input type="number" class="form-control bg-light" id="delete-age" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control bg-light" id="delete-email" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Roles</label>
+                        <input type="text" class="form-control bg-light" id="delete-roles" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+    let authUser = null;
+
+    function fetchAuthUser() {
+        fetch('/api/auth', { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                authUser = data;
+                document.getElementById('auth-info').innerText = `${data.email} with roles ${Array.from(data.authorities).map(r => r.authority).join(', ')}`;
+                renderUserInfo();
+            });
+    }
+
+    function logout() {
+        fetch('/api/logout', { method: 'POST', credentials: 'include' })
+            .then(() => location.href = '/login.html');
+    }
+
+    function switchView(view) {
+        document.getElementById('admin-view').style.display = (view === 'admin') ? 'block' : 'none';
+        document.getElementById('user-view').style.display = (view === 'user') ? 'block' : 'none';
+        document.getElementById('admin-tab').classList.toggle('active', view === 'admin');
+        document.getElementById('user-tab').classList.toggle('active', view === 'user');
+    }
+
+    function loadUsers() {
+        document.getElementById('create-user-form').style.display = 'none';
+        document.getElementById('user-table').style.display = 'block';
+
+        const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+        tabs.forEach(tab => {
+            tab.classList.remove('active');
+            tab.style.color = '';
+        });
+        tabs[0].classList.add('active');
+        tabs[0].style.color = 'black';
+
+        fetch('/admin/users', { credentials: 'include' })
+            .then(res => res.json())
+            .then(users => {
+                let rows = users.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.firstName}</td>
+                    <td>${u.lastName}</td>
+                    <td>${u.age}</td>
+                    <td>${u.email}</td>
+                    <td>${u.roles.map(r => `[${r.name}]`).join(' ')}</td>
+                    <td><button class="btn btn-info btn-sm text-white" onclick='showEditModal(${JSON.stringify(u)})'>Edit</button></td>
+                    <td><button class="btn btn-danger btn-sm" onclick='showDeleteModal(${JSON.stringify(u)})'>Delete</button></td>
+                </tr>`).join('');
+
+                document.getElementById('user-table').innerHTML = `
+                <div class="card p-3">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped align-middle mb-0">
+                            <thead class="table-light">
+                                <tr><th>ID</th><th>First Name</th><th>Last Name</th><th>Age</th><th>Email</th><th>Role</th><th>Edit</th><th>Delete</th></tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>`;
+            });
+    }
+
+    function showCreateForm() {
+        document.getElementById('user-table').style.display = 'none';
+        document.getElementById('create-user-form').style.display = 'block';
+
+        const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+        tabs.forEach(tab => {
+            tab.classList.remove('active');
+            tab.style.color = '';
+        });
+        tabs[1].classList.add('active');
+        tabs[1].style.color = 'black';
+
+        document.getElementById('user-table').innerHTML = '';
+        document.getElementById('create-user-form').style.display = 'block';
+        document.getElementById('create-user-form').innerHTML = `
+        <div class="card">
+            <div class="card-header bg-light"><strong>Add new user</strong></div>
+            <div class="card-body">
+                <form onsubmit="createUser(event)">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="mb-3 text-center"><label class="form-label fw-semibold">First Name</label><input type="text" name="firstName" class="form-control" required></div>
+                            <div class="mb-3 text-center"><label class="form-label fw-semibold">Last Name</label><input type="text" name="lastName" class="form-control" required></div>
+                            <div class="mb-3 text-center"><label class="form-label fw-semibold">Age</label><input type="number" name="age" class="form-control" min="0"></div>
+                            <div class="mb-3 text-center"><label class="form-label fw-semibold">Email</label><input type="email" name="email" class="form-control" required></div>
+                            <div class="mb-3 text-center"><label class="form-label fw-semibold">Password</label><input type="password" name="password" class="form-control" required></div>
+                            <div class="mb-3 text-center"><label class="form-label fw-semibold">Role</label>
+                                <select name="roles" multiple class="form-select">
+                                    <option value="1">ADMIN</option>
+                                    <option value="2">USER</option>
+                                </select>
+                            </div>
+                            <div class="text-center"><button type="submit" class="btn btn-success">Add new user</button></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>`;
+    }
+
+    function createUser(event) {
+        event.preventDefault();
+        const form = event.target;
+        const roles = Array.from(form.roles.selectedOptions).map(opt => ({ id: opt.value }));
+        const data = {
+            firstName: form.firstName.value,
+            lastName: form.lastName.value,
+            age: form.age.value,
+            email: form.email.value,
+            password: form.password.value,
+            roles
+        };
+
+        fetch('/admin/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        }).then(() => {
+            document.getElementById('create-user-form').style.display = 'none';
+            loadUsers();
+        });
+    }
+
+    function renderUserInfo() {
+        if (!authUser) return;
+        const user = authUser;
+        document.getElementById('user-info').innerHTML = `
+        <tr>
+            <td>${user.id}</td>
+            <td>${user.firstName}</td>
+            <td>${user.lastName}</td>
+            <td>${user.age}</td>
+            <td>${user.email}</td>
+            <td>${user.authorities.map(r => `[${r.authority}]`).join(' ')}</td>
+        </tr>`;
+    }
+
+    function showEditModal(user) {
+        document.getElementById('edit-id').value = user.id;
+        document.getElementById('edit-firstName').value = user.firstName;
+        document.getElementById('edit-lastName').value = user.lastName;
+        document.getElementById('edit-age').value = user.age;
+        document.getElementById('edit-email').value = user.email;
+        document.getElementById('edit-password').value = '';
+
+        const roleSelect = document.getElementById('edit-roles');
+        Array.from(roleSelect.options).forEach(opt => {
+            opt.selected = user.roles.some(r => r.name === opt.text);
+        });
+
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    }
+
+
+    function updateUser(event) {
+        event.preventDefault();
+        const form = event.target;
+
+        const roles = Array.from(form.roles.selectedOptions).map(opt => ({ id: opt.value }));
+        const password = form.password.value;
+
+        const data = {
+            id: form.id.value,
+            firstName: form.firstName.value,
+            lastName: form.lastName.value,
+            age: form.age.value,
+            email: form.email.value,
+            roles
+        };
+
+        if (password) {
+            data.password = password;
+        }
+
+        fetch(`/admin/users/${data.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        }).then(res => {
+            if (res.ok) {
+                const modalEl = document.getElementById('editUserModal');
+                bootstrap.Modal.getInstance(modalEl).hide();
+                loadUsers();
+            }
+        });
+    }
+
+    function showDeleteModal(user) {
+        document.getElementById('delete-id').value = user.id;
+        document.getElementById('delete-firstName').value = user.firstName;
+        document.getElementById('delete-lastName').value = user.lastName;
+        document.getElementById('delete-age').value = user.age;
+        document.getElementById('delete-email').value = user.email;
+        document.getElementById('delete-roles').value = user.roles.map(r => r.name).join(', ');
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+        modal.show();
+    }
+
+    function confirmDelete(event) {
+        event.preventDefault();
+        const id = document.getElementById('delete-id').value;
+
+        fetch(`/admin/users/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        }).then(res => {
+            if (res.ok) {
+                const modalEl = document.getElementById('deleteUserModal');
+                bootstrap.Modal.getInstance(modalEl).hide();
+                loadUsers();
+            }
+        });
+    }
+
+    fetchAuthUser();
+    loadUsers();
+</script>
+
+</body>
+</html>

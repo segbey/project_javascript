@@ -39,37 +39,29 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public void save(User user) {
+    public User save(User user) {
         Set<Role> roles = new HashSet<>(user.getRoles());
-        Role userRole = roleRepository.findByName("ROLE_USER");
-
-        if (roles.stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"))) {
-            roles.add(userRole);
-        }
         user.setRoles(roles);
 
         if (!user.getPassword().startsWith("$2a$")) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
-    public void editUser(User editedUser) {
-        User existing = userRepository.findById(editedUser.getId()).orElseThrow();
+    public void editUser(Long Id, User editedUser) {
+        User existing = userRepository.findById(Id).orElseThrow();
 
         existing.setFirstName(editedUser.getFirstName());
         existing.setLastName(editedUser.getLastName());
         existing.setAge(editedUser.getAge());
         existing.setEmail(editedUser.getEmail());
 
-        if (!editedUser.getPassword().isBlank()) {
+        if (editedUser.getPassword() != null && !editedUser.getPassword().isBlank()) {
             existing.setPassword(passwordEncoder.encode(editedUser.getPassword()));
         }
 
         Set<Role> roles = new HashSet<>(editedUser.getRoles());
-        if (roles.stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"))) {
-            roles.add(roleRepository.findByName("ROLE_USER"));
-        }
         existing.setRoles(roles);
 
         userRepository.save(existing);

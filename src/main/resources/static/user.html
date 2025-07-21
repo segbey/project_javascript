@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>User Dashboard</title>
@@ -34,8 +34,8 @@
 <!-- Top Navbar -->
 <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid justify-content-between">
-        <span class="navbar-text text-white" th:text="${user.email} + ' with roles ' + ${user.roles}"></span>
-        <form th:action="@{/logout}" method="post" class="mb-0">
+        <span class="navbar-text text-white" id="userInfo"></span>
+        <form action="/logout" method="post" class="mb-0">
             <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
         </form>
     </div>
@@ -47,7 +47,7 @@
         <!-- Sidebar -->
         <div class="col-md-2 p-0 sidebar">
             <nav class="nav flex-column nav-pills p-3">
-                <a class="nav-link active" th:href="@{/user}">User</a>
+                <a class="nav-link active">User</a>
             </nav>
         </div>
 
@@ -71,14 +71,12 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td th:text="${user.id}"></td>
-                            <td th:text="${user.firstName}"></td>
-                            <td th:text="${user.lastName}"></td>
-                            <td th:text="${user.age}"></td>
-                            <td th:text="${user.email}"></td>
-                            <td>
-                                <span th:each="role : ${user.roles}" th:text="'[' + ${role.name} + ']' + ' '"></span>
-                            </td>
+                            <td id="userId"></td>
+                            <td id="userFirstName"></td>
+                            <td id="userLastName"></td>
+                            <td id="userAge"></td>
+                            <td id="userEmail"></td>
+                            <td id="userRoles"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -88,6 +86,27 @@
         </div>
     </div>
 </div>
+
+<script>
+    fetch('/user')
+        .then(response => {
+            if (!response.ok) throw new Error('Not authorized or user not found');
+            return response.json();
+        })
+        .then(user => {
+            document.getElementById('userId').textContent = user.id;
+            document.getElementById('userFirstName').textContent = user.firstName;
+            document.getElementById('userLastName').textContent = user.lastName;
+            document.getElementById('userAge').textContent = user.age || '';
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userRoles').textContent = user.roles.map(r => `[${r.name}]`).join(' ');
+            document.getElementById('userInfo').textContent = `${user.email} with roles ${user.roles.map(r => `[${r.name}]`).join(' ')}`;
+        })
+        .catch(error => {
+            console.error('Failed to load user:', error);
+            document.body.innerHTML = `<div class='alert alert-danger m-4'>Could not load user. Please log in.</div>`;
+        });
+</script>
 
 </body>
 </html>
