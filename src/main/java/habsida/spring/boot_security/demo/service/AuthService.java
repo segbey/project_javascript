@@ -1,26 +1,28 @@
-package habsida.spring.boot_security.demo.configs.controller;
+package habsida.spring.boot_security.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.security.authentication.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
-@RestController
-@RequestMapping("/api")
-public class AuthRestController {
+@Service
+public class AuthService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> loginData, HttpServletRequest request) {
+    public ResponseEntity<Map<String, String>> authenticateUser(Map<String, String> loginData,
+                                                                HttpServletRequest request) {
         String email = loginData.get("email");
         String password = loginData.get("password");
 
@@ -40,24 +42,25 @@ public class AuthRestController {
             ));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("status", "error", "message", "Invalid email or password"));
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "Invalid email or password"
+                    ));
         }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public ResponseEntity<Map<String, String>> logoutUser(HttpServletRequest request) {
         request.getSession().invalidate();
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(Map.of("status", "logged_out"));
     }
 
-    @GetMapping("/auth")
-    public ResponseEntity<?> currentUser() {
+    public ResponseEntity<Object> getCurrentAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No user authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "No user authenticated"));
         }
-
         return ResponseEntity.ok(auth.getPrincipal());
     }
 }

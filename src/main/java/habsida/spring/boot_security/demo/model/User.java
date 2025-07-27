@@ -1,10 +1,20 @@
-package habsida.spring.boot_security.demo.configs.model;
+package habsida.spring.boot_security.demo.model;
 
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.ManyToMany;
+import javax.persistence.JoinTable;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-//import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 import java.util.*;
 
@@ -19,7 +29,7 @@ public class User implements UserDetails {
     @Column(name = "email", unique = true)
     private String email;
 
-//    @JsonIgnore
+
     @Column(name = "password")
     private String password;
 
@@ -31,7 +41,7 @@ public class User implements UserDetails {
 
     private Byte age;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),

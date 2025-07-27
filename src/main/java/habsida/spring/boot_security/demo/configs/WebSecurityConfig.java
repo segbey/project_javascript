@@ -1,6 +1,6 @@
 package habsida.spring.boot_security.demo.configs;
 
-import habsida.spring.boot_security.demo.configs.service.UserService;
+import habsida.spring.boot_security.demo.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

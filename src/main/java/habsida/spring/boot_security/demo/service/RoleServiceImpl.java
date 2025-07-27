@@ -1,7 +1,7 @@
-package habsida.spring.boot_security.demo.configs.service;
+package habsida.spring.boot_security.demo.service;
 
-import habsida.spring.boot_security.demo.configs.model.Role;
-import habsida.spring.boot_security.demo.configs.repository.RoleRepository;
+import habsida.spring.boot_security.demo.model.Role;
+import habsida.spring.boot_security.demo.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
-package habsida.spring.boot_security.demo.configs.repository;
+package habsida.spring.boot_security.demo.repository;
 
-import habsida.spring.boot_security.demo.configs.model.Role;
+import habsida.spring.boot_security.demo.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RoleRepository extends JpaRepository<Role, Long> {

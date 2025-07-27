@@ -1,7 +1,7 @@
-package habsida.spring.boot_security.demo.configs.repository;
+package habsida.spring.boot_security.demo.repository;
 
 import java.util.Optional;
-import habsida.spring.boot_security.demo.configs.model.User;
+import habsida.spring.boot_security.demo.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {

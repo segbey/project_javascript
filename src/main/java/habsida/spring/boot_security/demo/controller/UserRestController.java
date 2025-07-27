@@ -1,7 +1,7 @@
-package habsida.spring.boot_security.demo.configs.controller;
+package habsida.spring.boot_security.demo.controller;
 
-import habsida.spring.boot_security.demo.configs.model.User;
-import habsida.spring.boot_security.demo.configs.service.UserService;
+import habsida.spring.boot_security.demo.model.User;
+import habsida.spring.boot_security.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
